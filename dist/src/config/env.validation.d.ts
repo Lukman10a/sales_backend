@@ -1,0 +1,40 @@
+import { z } from 'zod';
+export declare const envSchema: z.ZodObject<{
+    NODE_ENV: z.ZodDefault<z.ZodEnum<["development", "test", "production"]>>;
+    PORT: z.ZodDefault<z.ZodNumber>;
+    DATABASE_URL: z.ZodDefault<z.ZodString>;
+    FRONTEND_ORIGIN: z.ZodDefault<z.ZodString>;
+    JWT_ACCESS_SECRET: z.ZodDefault<z.ZodString>;
+    JWT_REFRESH_SECRET: z.ZodDefault<z.ZodString>;
+    JWT_ACCESS_EXPIRES_IN: z.ZodDefault<z.ZodString>;
+    JWT_REFRESH_EXPIRES_IN: z.ZodDefault<z.ZodString>;
+    RATE_LIMIT_MAX: z.ZodDefault<z.ZodNumber>;
+    RATE_LIMIT_WINDOW_MS: z.ZodDefault<z.ZodNumber>;
+    REMEMBER_ME_DAYS: z.ZodDefault<z.ZodNumber>;
+}, "strip", z.ZodTypeAny, {
+    NODE_ENV: "development" | "test" | "production";
+    PORT: number;
+    DATABASE_URL: string;
+    FRONTEND_ORIGIN: string;
+    JWT_ACCESS_SECRET: string;
+    JWT_REFRESH_SECRET: string;
+    JWT_ACCESS_EXPIRES_IN: string;
+    JWT_REFRESH_EXPIRES_IN: string;
+    RATE_LIMIT_MAX: number;
+    RATE_LIMIT_WINDOW_MS: number;
+    REMEMBER_ME_DAYS: number;
+}, {
+    NODE_ENV?: "development" | "test" | "production" | undefined;
+    PORT?: number | undefined;
+    DATABASE_URL?: string | undefined;
+    FRONTEND_ORIGIN?: string | undefined;
+    JWT_ACCESS_SECRET?: string | undefined;
+    JWT_REFRESH_SECRET?: string | undefined;
+    JWT_ACCESS_EXPIRES_IN?: string | undefined;
+    JWT_REFRESH_EXPIRES_IN?: string | undefined;
+    RATE_LIMIT_MAX?: number | undefined;
+    RATE_LIMIT_WINDOW_MS?: number | undefined;
+    REMEMBER_ME_DAYS?: number | undefined;
+}>;
+export type EnvSchema = z.infer<typeof envSchema>;
+export declare function validateEnv(config: Record<string, unknown>): EnvSchema;

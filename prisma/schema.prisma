@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  owner
+  apprentice
+  investor
+}
+
+enum TeamStatus {
+  active
+  inactive
+  invited
+}
+
+enum SaleStatus {
+  pending
+  paid
+  refunded
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+enum ReportStatus {
+  pending
+  running
+  completed
+  failed
+}
+
+enum BackupType {
+  export
+  backup
+}
+
+enum BackupStatus {
+  pending
+  running
+  completed
+  failed
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         UserRole
+  businessName String?
+  avatarUrl    String?
+  investorId   Int?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastActive   DateTime? @db.Timestamp(6)
+  refreshTokenHash String?
+
+  investor      Investor?            @relation("InvestorUsers", fields: [investorId], references: [id])
+  notifications NotificationPreference?
+  dashboard     DashboardPreference?
+  activityLogs  ActivityLog[]
+  reports       Report[]
+}
+
+model TeamMember {
+  id          Int         @id @default(autoincrement())
+  name        String
+  email       String
+  phone       String?
+  department  String?
+  role        String
+  status      TeamStatus
+  permissions String[]
+  joinedDate  DateTime?   @db.Date
+  lastActive  DateTime?   @db.Timestamp(6)
+  avatarUrl   String?
+}
+
+model Product {
+  id                 Int       @id @default(autoincrement())
+  name               String
+  sku                String    @unique
+  category           String?
+  price              Decimal   @db.Decimal(12, 2)
+  stock              Int
+  lowStockThreshold  Int       @default(0)
+  updatedAt          DateTime  @updatedAt
+  saleItems          SaleItem[]
+}
+
+model SaleOrder {
+  id           Int         @id @default(autoincrement())
+  customerName String
+  status       SaleStatus  @default(pending)
+  paymentState PaymentStatus @default(pending)
+  total        Decimal     @db.Decimal(12, 2)
+  createdAt    DateTime    @default(now())
+
+  items SaleItem[]
+}
+
+model SaleItem {
+  id        Int       @id @default(autoincrement())
+  quantity  Int
+  price     Decimal   @db.Decimal(12, 2)
+  productId Int
+  orderId   Int
+
+  product Product  @relation(fields: [productId], references: [id])
+  order   SaleOrder @relation(fields: [orderId], references: [id])
+}
+
+model Report {
+  id         Int          @id @default(autoincrement())
+  type       String
+  status     ReportStatus @default(pending)
+  schedule   String?
+  lastRunAt  DateTime?
+  downloadUrl String?
+  createdBy  Int?
+  createdAt  DateTime     @default(now())
+
+  user User? @relation(fields: [createdBy], references: [id])
+}
+
+model NotificationPreference {
+  id        Int     @id @default(autoincrement())
+  userId    Int     @unique
+  channels  Json
+  topics    Json
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model DashboardPreference {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  layout          Json?
+  quickActions    Json?
+  widgets         Json?
+  welcomeMessage  String?
+  showTips        Boolean  @default(true)
+  autoRefresh     Boolean  @default(false)
+  refreshInterval Int?     @default(60)
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  action    String
+  entity    String
+  details   Json?
+  timestamp DateTime @default(now())
+  ipAddress String?
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Investor {
+  id               Int          @id @default(autoincrement())
+  investorId       String       @unique
+  name             String
+  email            String       @unique
+  phone            String?
+  portfolioSummary Json?
+  createdAt        DateTime     @default(now())
+
+  withdrawals Withdrawal[]
+  users       User[] @relation("InvestorUsers")
+}
+
+model Withdrawal {
+  id          Int      @id @default(autoincrement())
+  investorId  Int
+  amount      Decimal  @db.Decimal(12, 2)
+  status      String
+  requestedAt DateTime @default(now())
+  processedAt DateTime?
+
+  investor Investor @relation(fields: [investorId], references: [id])
+}
+
+model BackupJob {
+  id         Int          @id @default(autoincrement())
+  type       BackupType
+  status     BackupStatus @default(pending)
+  startedAt  DateTime     @default(now())
+  finishedAt DateTime?
+  fileUrl    String?
+}
