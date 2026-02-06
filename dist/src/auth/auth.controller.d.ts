@@ -9,34 +9,34 @@ export declare class AuthController {
     signup(dto: SignupDto, res: Response): Promise<{
         user: {
             displayName: string;
-            role: import("@prisma/client").$Enums.UserRole;
             email: string;
             firstName: string;
             lastName: string;
+            role: import("@prisma/client").$Enums.UserRole;
             businessName: string | null;
-            investorId: number | null;
             avatarUrl: string | null;
-            id: number;
             createdAt: Date;
             updatedAt: Date;
             lastActive: Date | null;
+            id: number;
+            investorId: number | null;
         };
         accessToken: string;
     }>;
     login(dto: LoginDto, res: Response): Promise<{
         user: {
             displayName: string;
-            role: import("@prisma/client").$Enums.UserRole;
             email: string;
             firstName: string;
             lastName: string;
+            role: import("@prisma/client").$Enums.UserRole;
             businessName: string | null;
-            investorId: number | null;
             avatarUrl: string | null;
-            id: number;
             createdAt: Date;
             updatedAt: Date;
             lastActive: Date | null;
+            id: number;
+            investorId: number | null;
         };
         accessToken: string;
     }>;
@@ -45,17 +45,17 @@ export declare class AuthController {
     }, res: Response): Promise<{
         user: {
             displayName: string;
-            role: import("@prisma/client").$Enums.UserRole;
             email: string;
             firstName: string;
             lastName: string;
+            role: import("@prisma/client").$Enums.UserRole;
             businessName: string | null;
-            investorId: number | null;
             avatarUrl: string | null;
-            id: number;
             createdAt: Date;
             updatedAt: Date;
             lastActive: Date | null;
+            id: number;
+            investorId: number | null;
         };
         accessToken: string;
     }>;

@@ -30,6 +30,9 @@ let SaleOrdersController = class SaleOrdersController {
     async findAll() {
         return this.saleOrdersService.findAll();
     }
+    async getByDateRange(startDate, endDate) {
+        return this.saleOrdersService.getSalesByDateRange(new Date(startDate), new Date(endDate));
+    }
     async findOne(id) {
         return this.saleOrdersService.findOne(id);
     }
@@ -41,9 +44,6 @@ let SaleOrdersController = class SaleOrdersController {
     }
     async cancel(id) {
         return this.saleOrdersService.cancel(id);
-    }
-    async getByDateRange(startDate, endDate) {
-        return this.saleOrdersService.getSalesByDateRange(new Date(startDate), new Date(endDate));
     }
 };
 exports.SaleOrdersController = SaleOrdersController;
@@ -62,6 +62,16 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], SaleOrdersController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Get)('report/by-date'),
+    (0, roles_decorator_1.Roles)('owner'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    __param(0, (0, common_1.Query)('startDate')),
+    __param(1, (0, common_1.Query)('endDate')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], SaleOrdersController.prototype, "getByDateRange", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
@@ -94,16 +104,6 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], SaleOrdersController.prototype, "cancel", null);
-__decorate([
-    (0, common_1.Get)('report/by-date'),
-    (0, roles_decorator_1.Roles)('owner'),
-    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    __param(0, (0, common_1.Query)('startDate')),
-    __param(1, (0, common_1.Query)('endDate')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
-    __metadata("design:returntype", Promise)
-], SaleOrdersController.prototype, "getByDateRange", null);
 exports.SaleOrdersController = SaleOrdersController = __decorate([
     (0, common_1.Controller)('sale-orders'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

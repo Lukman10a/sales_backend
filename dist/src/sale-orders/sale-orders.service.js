@@ -83,6 +83,9 @@ let SaleOrdersService = class SaleOrdersService {
         if (order.status !== 'pending') {
             throw new common_1.BadRequestException('Can only edit items for pending orders');
         }
+        for (const oldItem of order.items) {
+            await this.productsService.increaseStock(oldItem.productId, oldItem.quantity);
+        }
         await this.prisma.saleItem.deleteMany({
             where: { orderId: id },
         });
@@ -90,6 +93,9 @@ let SaleOrdersService = class SaleOrdersService {
         for (const item of items) {
             await this.productsService.findOne(item.productId);
             totalAmount += item.quantity * item.price;
+        }
+        for (const item of items) {
+            await this.productsService.reduceStock(item.productId, item.quantity);
         }
         return this.prisma.saleOrder.update({
             where: { id },

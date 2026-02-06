@@ -29,11 +29,14 @@ let BackupsController = class BackupsController {
     async findAll() {
         return this.backupsService.findAll();
     }
-    async findOne(id) {
-        return this.backupsService.findOne(id);
+    async getSettings() {
+        return this.backupsService.getSettings();
     }
     async downloadBackup(id) {
         return this.backupsService.downloadBackup(id);
+    }
+    async findOne(id) {
+        return this.backupsService.findOne(id);
     }
     async restoreBackup(id) {
         return this.backupsService.restoreBackup(id);
@@ -43,9 +46,6 @@ let BackupsController = class BackupsController {
     }
     async scheduleBackup(intervalHours) {
         return this.backupsService.scheduleBackup(intervalHours);
-    }
-    async getSettings() {
-        return this.backupsService.getSettings();
     }
 };
 exports.BackupsController = BackupsController;
@@ -66,14 +66,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], BackupsController.prototype, "findAll", null);
 __decorate([
-    (0, common_1.Get)(':id'),
+    (0, common_1.Get)('settings'),
     (0, roles_decorator_1.Roles)('owner'),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], BackupsController.prototype, "findOne", null);
+], BackupsController.prototype, "getSettings", null);
 __decorate([
     (0, common_1.Get)('download/:id'),
     (0, roles_decorator_1.Roles)('owner'),
@@ -83,6 +82,15 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], BackupsController.prototype, "downloadBackup", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    (0, roles_decorator_1.Roles)('owner'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], BackupsController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Post)(':id/restore'),
     (0, roles_decorator_1.Roles)('owner'),
@@ -110,14 +118,6 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", Promise)
 ], BackupsController.prototype, "scheduleBackup", null);
-__decorate([
-    (0, common_1.Get)('settings'),
-    (0, roles_decorator_1.Roles)('owner'),
-    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], BackupsController.prototype, "getSettings", null);
 exports.BackupsController = BackupsController = __decorate([
     (0, common_1.Controller)('backups'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

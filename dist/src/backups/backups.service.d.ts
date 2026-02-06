@@ -1,17 +1,11 @@
-export interface Backup {
-    id: string;
-    filename: string;
-    size: number;
-    createdAt: Date;
-    downloadUrl: string;
-    restorePoint: boolean;
-}
+import { PrismaService } from '../prisma/prisma.service';
+import type { BackupJob } from '@prisma/client';
 export declare class BackupsService {
-    private backups;
-    private backupIdCounter;
-    createBackup(): Promise<Backup>;
-    findAll(): Promise<Backup[]>;
-    findOne(id: string): Promise<Backup>;
+    private readonly prisma;
+    constructor(prisma: PrismaService);
+    createBackup(): Promise<BackupJob>;
+    findAll(): Promise<BackupJob[]>;
+    findOne(id: string): Promise<BackupJob>;
     downloadBackup(id: string): Promise<{
         filename: string;
         content: string;

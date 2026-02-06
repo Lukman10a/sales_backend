@@ -1,30 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GenerateReportDto } from './dto/generate-report.dto';
+import type { Report } from '@prisma/client';
+import { ReportStatus } from '@prisma/client';
 
-export interface SalesReport {
-  id: string;
-  type: 'sales' | 'inventory' | 'performance';
-  startDate: Date;
-  endDate: Date;
-  generatedAt: Date;
+export interface SalesReportData {
   totalSales: number;
   totalOrders: number;
-  downloadUrl: string;
+  period: {
+    startDate: Date;
+    endDate: Date;
+  };
 }
 
 @Injectable()
 export class ReportsService {
-  // In-memory storage for demo (use database in production)
-  private reports: SalesReport[] = [];
-  private reportIdCounter = 1;
-
   constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Generate sales report for date range
    */
-  async generateSalesReport(dto: GenerateReportDto): Promise<SalesReport> {
+  async generateSalesReport(dto: GenerateReportDto): Promise<Report> {
     const { startDate, endDate } = dto;
 
     // Get sales data
@@ -44,43 +40,38 @@ export class ReportsService {
       0,
     );
 
-    const report: SalesReport = {
-      id: `report-${this.reportIdCounter++}`,
-      type: 'sales',
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      generatedAt: new Date(),
-      totalSales,
-      totalOrders: orders.length,
-      downloadUrl: `/reports/download/report-${this.reportIdCounter - 1}`,
-    };
+    // Store in database
+    const report = await this.prisma.report.create({
+      data: {
+        type: 'sales',
+        status: ReportStatus.completed,
+        lastRunAt: new Date(),
+        downloadUrl: null,
+      },
+    });
 
-    this.reports.push(report);
     return report;
   }
 
   /**
    * Generate inventory report
    */
-  async generateInventoryReport(): Promise<SalesReport> {
+  async generateInventoryReport(): Promise<Report> {
     const products = await this.prisma.product.findMany();
 
     const lowStockProducts = products.filter(
-      (p) => p.stock <= (p.lowStockThreshold || 10),
+      (p) => p.stock <= (p.minStockThreshold || 10),
     );
 
-    const report: SalesReport = {
-      id: `report-${this.reportIdCounter++}`,
-      type: 'inventory',
-      startDate: new Date(),
-      endDate: new Date(),
-      generatedAt: new Date(),
-      totalSales: lowStockProducts.length,
-      totalOrders: products.length,
-      downloadUrl: `/reports/download/report-${this.reportIdCounter - 1}`,
-    };
+    const report = await this.prisma.report.create({
+      data: {
+        type: 'inventory',
+        status: ReportStatus.completed,
+        lastRunAt: new Date(),
+        downloadUrl: null,
+      },
+    });
 
-    this.reports.push(report);
     return report;
   }
 
@@ -89,7 +80,7 @@ export class ReportsService {
    */
   async generatePerformanceReport(
     dto: GenerateReportDto,
-  ): Promise<SalesReport> {
+  ): Promise<Report> {
     const { startDate, endDate } = dto;
 
     const orders = await this.prisma.saleOrder.findMany({
@@ -104,33 +95,40 @@ export class ReportsService {
 
     const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total), 0);
 
-    const report: SalesReport = {
-      id: `report-${this.reportIdCounter++}`,
-      type: 'performance',
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
-      generatedAt: new Date(),
-      totalSales: totalRevenue,
-      totalOrders: orders.length,
-      downloadUrl: `/reports/download/report-${this.reportIdCounter - 1}`,
-    };
+    const report = await this.prisma.report.create({
+      data: {
+        type: 'performance',
+        status: ReportStatus.completed,
+        lastRunAt: new Date(),
+        downloadUrl: null,
+      },
+    });
 
-    this.reports.push(report);
     return report;
   }
 
   /**
    * Get all reports
    */
-  findAll(): Promise<SalesReport[]> {
-    return Promise.resolve(this.reports);
+  async findAll(): Promise<Report[]> {
+    return this.prisma.report.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   /**
    * Get report by ID
    */
-  findOne(id: string): Promise<SalesReport | undefined> {
-    return Promise.resolve(this.reports.find((r) => r.id === id));
+  async findOne(id: string): Promise<Report> {
+    const report = await this.prisma.report.findUnique({
+      where: { id: parseInt(id, 10) },
+    });
+    
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+    
+    return report;
   }
 
   /**
@@ -141,12 +139,9 @@ export class ReportsService {
     content: string;
   }> {
     const report = await this.findOne(id);
-    if (!report) {
-      throw new Error('Report not found');
-    }
 
-    const content = `Report ID,Type,Start Date,End Date,Total Sales,Total Orders
-${report.id},${report.type},${report.startDate.toISOString()},${report.endDate.toISOString()},${report.totalSales},${report.totalOrders}`;
+    const content = `Report ID,Type,Created At,Status
+${report.id},${report.type},${report.createdAt.toISOString()},${report.status}`;
 
     return {
       filename: `${report.type}-report-${report.id}.csv`,
@@ -157,12 +152,14 @@ ${report.id},${report.type},${report.startDate.toISOString()},${report.endDate.t
   /**
    * Delete report by ID
    */
-  remove(id: string): Promise<boolean> {
-    const index = this.reports.findIndex((r) => r.id === id);
-    if (index > -1) {
-      this.reports.splice(index, 1);
-      return Promise.resolve(true);
+  async remove(id: string): Promise<boolean> {
+    try {
+      await this.prisma.report.delete({
+        where: { id: parseInt(id, 10) },
+      });
+      return true;
+    } catch {
+      return false;
     }
-    return Promise.resolve(false);
   }
 }

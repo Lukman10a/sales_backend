@@ -40,14 +40,14 @@ export class BackupsController {
   }
 
   /**
-   * GET /backups/:id
-   * Get backup by ID
+   * GET /backups/settings
+   * Get backup settings
    */
-  @Get(':id')
+  @Get('settings')
   @Roles('owner')
   @UseGuards(RolesGuard)
-  async findOne(@Param('id') id: string) {
-    return this.backupsService.findOne(id);
+  async getSettings() {
+    return this.backupsService.getSettings();
   }
 
   /**
@@ -59,6 +59,17 @@ export class BackupsController {
   @UseGuards(RolesGuard)
   async downloadBackup(@Param('id') id: string) {
     return this.backupsService.downloadBackup(id);
+  }
+
+  /**
+   * GET /backups/:id
+   * Get backup by ID
+   */
+  @Get(':id')
+  @Roles('owner')
+  @UseGuards(RolesGuard)
+  async findOne(@Param('id') id: string) {
+    return this.backupsService.findOne(id);
   }
 
   /**
@@ -92,16 +103,5 @@ export class BackupsController {
   @UseGuards(RolesGuard)
   async scheduleBackup(@Body('intervalHours') intervalHours: number) {
     return this.backupsService.scheduleBackup(intervalHours);
-  }
-
-  /**
-   * GET /backups/settings
-   * Get backup settings
-   */
-  @Get('settings')
-  @Roles('owner')
-  @UseGuards(RolesGuard)
-  async getSettings() {
-    return this.backupsService.getSettings();
   }
 }

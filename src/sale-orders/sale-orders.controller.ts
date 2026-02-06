@@ -41,6 +41,23 @@ export class SaleOrdersController {
   }
 
   /**
+   * GET /sale-orders/report/by-date
+   * Get sales by date range
+   */
+  @Get('report/by-date')
+  @Roles('owner')
+  @UseGuards(RolesGuard)
+  async getByDateRange(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.saleOrdersService.getSalesByDateRange(
+      new Date(startDate),
+      new Date(endDate),
+    );
+  }
+
+  /**
    * GET /sale-orders/:id
    * Get sale order by ID
    */
@@ -83,22 +100,5 @@ export class SaleOrdersController {
   @Patch(':id/cancel')
   async cancel(@Param('id', ParseIntPipe) id: number) {
     return this.saleOrdersService.cancel(id);
-  }
-
-  /**
-   * GET /sale-orders/report/by-date
-   * Get sales by date range
-   */
-  @Get('report/by-date')
-  @Roles('owner')
-  @UseGuards(RolesGuard)
-  async getByDateRange(
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
-  ) {
-    return this.saleOrdersService.getSalesByDateRange(
-      new Date(startDate),
-      new Date(endDate),
-    );
   }
 }

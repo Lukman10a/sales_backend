@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
 import type { User } from '@prisma/client';

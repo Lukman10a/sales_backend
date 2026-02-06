@@ -75,15 +75,10 @@ export class ProductsService {
    * Get products with low stock
    */
   async getLowStockProducts(): Promise<Product[]> {
-    return this.prisma.product.findMany({
-      where: {
-        stock: {
-          lte: this.prisma.$queryRawUnsafe(
-            `stock <= "minStockThreshold"`,
-          ) as unknown as any,
-        },
-      },
-    });
+    const allProducts = await this.prisma.product.findMany();
+    return allProducts.filter(
+      (product) => product.stock <= product.minStockThreshold,
+    );
   }
 
   /**

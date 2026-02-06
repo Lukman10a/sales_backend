@@ -12,10 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReportsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const client_1 = require("@prisma/client");
 let ReportsService = class ReportsService {
     prisma;
-    reports = [];
-    reportIdCounter = 1;
     constructor(prisma) {
         this.prisma = prisma;
     }
@@ -32,33 +31,27 @@ let ReportsService = class ReportsService {
             include: { items: true },
         });
         const totalSales = orders.reduce((sum, order) => sum + Number(order.total), 0);
-        const report = {
-            id: `report-${this.reportIdCounter++}`,
-            type: 'sales',
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
-            generatedAt: new Date(),
-            totalSales,
-            totalOrders: orders.length,
-            downloadUrl: `/reports/download/report-${this.reportIdCounter - 1}`,
-        };
-        this.reports.push(report);
+        const report = await this.prisma.report.create({
+            data: {
+                type: 'sales',
+                status: client_1.ReportStatus.completed,
+                lastRunAt: new Date(),
+                downloadUrl: null,
+            },
+        });
         return report;
     }
     async generateInventoryReport() {
         const products = await this.prisma.product.findMany();
-        const lowStockProducts = products.filter((p) => p.stock <= (p.lowStockThreshold || 10));
-        const report = {
-            id: `report-${this.reportIdCounter++}`,
-            type: 'inventory',
-            startDate: new Date(),
-            endDate: new Date(),
-            generatedAt: new Date(),
-            totalSales: lowStockProducts.length,
-            totalOrders: products.length,
-            downloadUrl: `/reports/download/report-${this.reportIdCounter - 1}`,
-        };
-        this.reports.push(report);
+        const lowStockProducts = products.filter((p) => p.stock <= (p.minStockThreshold || 10));
+        const report = await this.prisma.report.create({
+            data: {
+                type: 'inventory',
+                status: client_1.ReportStatus.completed,
+                lastRunAt: new Date(),
+                downloadUrl: null,
+            },
+        });
         return report;
     }
     async generatePerformanceReport(dto) {
@@ -73,44 +66,49 @@ let ReportsService = class ReportsService {
             include: { items: true },
         });
         const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total), 0);
-        const report = {
-            id: `report-${this.reportIdCounter++}`,
-            type: 'performance',
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
-            generatedAt: new Date(),
-            totalSales: totalRevenue,
-            totalOrders: orders.length,
-            downloadUrl: `/reports/download/report-${this.reportIdCounter - 1}`,
-        };
-        this.reports.push(report);
+        const report = await this.prisma.report.create({
+            data: {
+                type: 'performance',
+                status: client_1.ReportStatus.completed,
+                lastRunAt: new Date(),
+                downloadUrl: null,
+            },
+        });
         return report;
     }
-    findAll() {
-        return Promise.resolve(this.reports);
+    async findAll() {
+        return this.prisma.report.findMany({
+            orderBy: { createdAt: 'desc' },
+        });
     }
-    findOne(id) {
-        return Promise.resolve(this.reports.find((r) => r.id === id));
+    async findOne(id) {
+        const report = await this.prisma.report.findUnique({
+            where: { id: parseInt(id, 10) },
+        });
+        if (!report) {
+            throw new common_1.NotFoundException('Report not found');
+        }
+        return report;
     }
     async downloadReport(id) {
         const report = await this.findOne(id);
-        if (!report) {
-            throw new Error('Report not found');
-        }
-        const content = `Report ID,Type,Start Date,End Date,Total Sales,Total Orders
-${report.id},${report.type},${report.startDate.toISOString()},${report.endDate.toISOString()},${report.totalSales},${report.totalOrders}`;
+        const content = `Report ID,Type,Created At,Status
+${report.id},${report.type},${report.createdAt.toISOString()},${report.status}`;
         return {
             filename: `${report.type}-report-${report.id}.csv`,
             content,
         };
     }
-    remove(id) {
-        const index = this.reports.findIndex((r) => r.id === id);
-        if (index > -1) {
-            this.reports.splice(index, 1);
-            return Promise.resolve(true);
+    async remove(id) {
+        try {
+            await this.prisma.report.delete({
+                where: { id: parseInt(id, 10) },
+            });
+            return true;
         }
-        return Promise.resolve(false);
+        catch {
+            return false;
+        }
     }
 };
 exports.ReportsService = ReportsService;

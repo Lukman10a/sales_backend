@@ -1,25 +1,22 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { GenerateReportDto } from './dto/generate-report.dto';
-export interface SalesReport {
-    id: string;
-    type: 'sales' | 'inventory' | 'performance';
-    startDate: Date;
-    endDate: Date;
-    generatedAt: Date;
+import type { Report } from '@prisma/client';
+export interface SalesReportData {
     totalSales: number;
     totalOrders: number;
-    downloadUrl: string;
+    period: {
+        startDate: Date;
+        endDate: Date;
+    };
 }
 export declare class ReportsService {
     private readonly prisma;
-    private reports;
-    private reportIdCounter;
     constructor(prisma: PrismaService);
-    generateSalesReport(dto: GenerateReportDto): Promise<SalesReport>;
-    generateInventoryReport(): Promise<SalesReport>;
-    generatePerformanceReport(dto: GenerateReportDto): Promise<SalesReport>;
-    findAll(): Promise<SalesReport[]>;
-    findOne(id: string): Promise<SalesReport | undefined>;
+    generateSalesReport(dto: GenerateReportDto): Promise<Report>;
+    generateInventoryReport(): Promise<Report>;
+    generatePerformanceReport(dto: GenerateReportDto): Promise<Report>;
+    findAll(): Promise<Report[]>;
+    findOne(id: string): Promise<Report>;
     downloadReport(id: string): Promise<{
         filename: string;
         content: string;

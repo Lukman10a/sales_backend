@@ -6,44 +6,44 @@ export declare class UsersController {
     constructor(usersService: UsersService);
     getProfile(userId: number): Promise<{
         displayName: string;
-        role: import("@prisma/client").$Enums.UserRole;
         email: string;
         firstName: string;
         lastName: string;
+        role: import("@prisma/client").$Enums.UserRole;
         businessName: string | null;
-        investorId: number | null;
         avatarUrl: string | null;
-        id: number;
         createdAt: Date;
         updatedAt: Date;
         lastActive: Date | null;
+        id: number;
+        investorId: number | null;
     }>;
     updateProfile(userId: number, updateProfileDto: UpdateProfileDto): Promise<{
         displayName: string;
-        role: import("@prisma/client").$Enums.UserRole;
         email: string;
         firstName: string;
         lastName: string;
+        role: import("@prisma/client").$Enums.UserRole;
         businessName: string | null;
-        investorId: number | null;
         avatarUrl: string | null;
-        id: number;
         createdAt: Date;
         updatedAt: Date;
         lastActive: Date | null;
+        id: number;
+        investorId: number | null;
     }>;
     changePassword(userId: number, changePasswordDto: ChangePasswordDto): Promise<{
         displayName: string;
-        role: import("@prisma/client").$Enums.UserRole;
         email: string;
         firstName: string;
         lastName: string;
+        role: import("@prisma/client").$Enums.UserRole;
         businessName: string | null;
-        investorId: number | null;
         avatarUrl: string | null;
-        id: number;
         createdAt: Date;
         updatedAt: Date;
         lastActive: Date | null;
+        id: number;
+        investorId: number | null;
     }>;
 }

@@ -50,13 +50,8 @@ let ProductsService = class ProductsService {
         });
     }
     async getLowStockProducts() {
-        return this.prisma.product.findMany({
-            where: {
-                stock: {
-                    lte: this.prisma.$queryRawUnsafe(`stock <= "minStockThreshold"`),
-                },
-            },
-        });
+        const allProducts = await this.prisma.product.findMany();
+        return allProducts.filter((product) => product.stock <= product.minStockThreshold);
     }
     async reduceStock(productId, quantity) {
         const product = await this.findOne(productId);

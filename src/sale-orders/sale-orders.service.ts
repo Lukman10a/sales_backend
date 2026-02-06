@@ -127,16 +127,29 @@ export class SaleOrdersService {
       throw new BadRequestException('Can only edit items for pending orders');
     }
 
+    // Restore stock from old items
+    for (const oldItem of order.items) {
+      await this.productsService.increaseStock(
+        oldItem.productId,
+        oldItem.quantity,
+      );
+    }
+
     // Delete old items
     await this.prisma.saleItem.deleteMany({
       where: { orderId: id },
     });
 
-    // Calculate new total
+    // Calculate new total and validate products
     let totalAmount = 0;
     for (const item of items) {
       await this.productsService.findOne(item.productId);
       totalAmount += item.quantity * item.price;
+    }
+
+    // Reduce stock for new items
+    for (const item of items) {
+      await this.productsService.reduceStock(item.productId, item.quantity);
     }
 
     // Create new items
