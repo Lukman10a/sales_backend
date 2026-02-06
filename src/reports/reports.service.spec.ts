@@ -1,9 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReportsService } from './reports.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotFoundException } from '@nestjs/common';
+import { ReportStatus } from '@prisma/client';
 
 describe('ReportsService', () => {
   let service: ReportsService;
+
+  const now = new Date('2026-02-06T10:00:00.000Z');
+  const mockReport = {
+    id: 1,
+    createdAt: now,
+    status: ReportStatus.completed,
+    type: 'sales',
+    schedule: null,
+    lastRunAt: now,
+    downloadUrl: null,
+    createdBy: null,
+  };
 
   const mockPrismaService = {
     saleOrder: {
@@ -11,6 +25,12 @@ describe('ReportsService', () => {
     },
     product: {
       findMany: jest.fn(),
+    },
+    report: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      delete: jest.fn(),
     },
   };
 
@@ -50,6 +70,7 @@ describe('ReportsService', () => {
       ];
 
       mockPrismaService.saleOrder.findMany.mockResolvedValue(mockOrders);
+      mockPrismaService.report.create.mockResolvedValue(mockReport);
 
       const report = await service.generateSalesReport({
         startDate: '2026-01-01T00:00:00Z',
@@ -57,9 +78,7 @@ describe('ReportsService', () => {
       });
 
       expect(report.type).toBe('sales');
-      expect(report.totalOrders).toBe(2);
-      expect(report.totalSales).toBe(300);
-      expect(report.downloadUrl).toBeDefined();
+      expect(report.status).toBe(ReportStatus.completed);
     });
   });
 
@@ -71,12 +90,16 @@ describe('ReportsService', () => {
       ];
 
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
+      mockPrismaService.report.create.mockResolvedValue({
+        ...mockReport,
+        id: 2,
+        type: 'inventory',
+      });
 
       const report = await service.generateInventoryReport();
 
       expect(report.type).toBe('inventory');
-      expect(report.totalOrders).toBe(2);
-      expect(report.totalSales).toBe(1); // Only 1 low-stock product
+      expect(report.status).toBe(ReportStatus.completed);
     });
   });
 
@@ -87,6 +110,11 @@ describe('ReportsService', () => {
       ];
 
       mockPrismaService.saleOrder.findMany.mockResolvedValue(mockOrders);
+      mockPrismaService.report.create.mockResolvedValue({
+        ...mockReport,
+        id: 3,
+        type: 'performance',
+      });
 
       const report = await service.generatePerformanceReport({
         startDate: '2026-01-01T00:00:00Z',
@@ -94,21 +122,16 @@ describe('ReportsService', () => {
       });
 
       expect(report.type).toBe('performance');
-      expect(report.totalSales).toBe(500);
-      expect(report.totalOrders).toBe(1);
+      expect(report.status).toBe(ReportStatus.completed);
     });
   });
 
   describe('findAll', () => {
     it('should return all reports', async () => {
-      mockPrismaService.saleOrder.findMany.mockResolvedValue([]);
-      mockPrismaService.product.findMany.mockResolvedValue([]);
-
-      await service.generateSalesReport({
-        startDate: '2026-01-01T00:00:00Z',
-        endDate: '2026-01-31T23:59:59Z',
-      });
-      await service.generateInventoryReport();
+      mockPrismaService.report.findMany.mockResolvedValue([
+        mockReport,
+        { ...mockReport, id: 2, type: 'inventory' },
+      ]);
 
       const reports = await service.findAll();
 
@@ -118,14 +141,9 @@ describe('ReportsService', () => {
 
   describe('downloadReport', () => {
     it('should return CSV content for report', async () => {
-      mockPrismaService.saleOrder.findMany.mockResolvedValue([]);
+      mockPrismaService.report.findUnique.mockResolvedValue(mockReport);
 
-      const report = await service.generateSalesReport({
-        startDate: '2026-01-01T00:00:00Z',
-        endDate: '2026-01-31T23:59:59Z',
-      });
-
-      const download = await service.downloadReport(report.id);
+      const download = await service.downloadReport(String(mockReport.id));
 
       expect(download.filename).toContain('sales-report');
       expect(download.content).toContain('Report ID');
@@ -134,17 +152,15 @@ describe('ReportsService', () => {
 
   describe('remove', () => {
     it('should delete report by id', async () => {
-      mockPrismaService.saleOrder.findMany.mockResolvedValue([]);
+      mockPrismaService.report.delete.mockResolvedValue(mockReport);
+      mockPrismaService.report.findUnique.mockResolvedValue(null);
 
-      const report = await service.generateSalesReport({
-        startDate: '2026-01-01T00:00:00Z',
-        endDate: '2026-01-31T23:59:59Z',
-      });
-
-      const removed = await service.remove(report.id);
+      const removed = await service.remove(String(mockReport.id));
 
       expect(removed).toBe(true);
-      expect(await service.findOne(report.id)).toBeUndefined();
+      await expect(service.findOne(String(mockReport.id))).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

@@ -22,10 +22,10 @@ export declare class SaleOrdersService {
             orderId: number;
         }[];
     } & {
-        id: number;
-        status: import("@prisma/client").$Enums.SaleStatus;
         createdAt: Date;
+        id: number;
         customerName: string;
+        status: import("@prisma/client").$Enums.SaleStatus;
         paymentState: import("@prisma/client").$Enums.PaymentStatus;
         total: import("@prisma/client/runtime/library").Decimal;
     })[]>;
@@ -38,10 +38,10 @@ export declare class SaleOrdersService {
             orderId: number;
         }[];
     } & {
-        id: number;
-        status: import("@prisma/client").$Enums.SaleStatus;
         createdAt: Date;
+        id: number;
         customerName: string;
+        status: import("@prisma/client").$Enums.SaleStatus;
         paymentState: import("@prisma/client").$Enums.PaymentStatus;
         total: import("@prisma/client/runtime/library").Decimal;
     }>;
@@ -59,18 +59,18 @@ export declare class SaleOrdersService {
             orderId: number;
         }[];
     } & {
-        id: number;
-        status: import("@prisma/client").$Enums.SaleStatus;
         createdAt: Date;
+        id: number;
         customerName: string;
+        status: import("@prisma/client").$Enums.SaleStatus;
         paymentState: import("@prisma/client").$Enums.PaymentStatus;
         total: import("@prisma/client/runtime/library").Decimal;
     }>;
     cancel(id: number): Promise<{
-        id: number;
-        status: import("@prisma/client").$Enums.SaleStatus;
         createdAt: Date;
+        id: number;
         customerName: string;
+        status: import("@prisma/client").$Enums.SaleStatus;
         paymentState: import("@prisma/client").$Enums.PaymentStatus;
         total: import("@prisma/client/runtime/library").Decimal;
     }>;
@@ -83,10 +83,10 @@ export declare class SaleOrdersService {
             orderId: number;
         }[];
     } & {
-        id: number;
-        status: import("@prisma/client").$Enums.SaleStatus;
         createdAt: Date;
+        id: number;
         customerName: string;
+        status: import("@prisma/client").$Enums.SaleStatus;
         paymentState: import("@prisma/client").$Enums.PaymentStatus;
         total: import("@prisma/client/runtime/library").Decimal;
     })[]>;

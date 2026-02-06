@@ -4,54 +4,54 @@ export declare class ReportsController {
     private readonly reportsService;
     constructor(reportsService: ReportsService);
     generateSalesReport(dto: GenerateReportDto): Promise<{
+        createdAt: Date;
         id: number;
-        type: string;
         status: import("@prisma/client").$Enums.ReportStatus;
+        type: string;
         schedule: string | null;
         lastRunAt: Date | null;
         downloadUrl: string | null;
         createdBy: number | null;
-        createdAt: Date;
     }>;
     generateInventoryReport(): Promise<{
+        createdAt: Date;
         id: number;
-        type: string;
         status: import("@prisma/client").$Enums.ReportStatus;
+        type: string;
         schedule: string | null;
         lastRunAt: Date | null;
         downloadUrl: string | null;
         createdBy: number | null;
-        createdAt: Date;
     }>;
     generatePerformanceReport(dto: GenerateReportDto): Promise<{
+        createdAt: Date;
         id: number;
-        type: string;
         status: import("@prisma/client").$Enums.ReportStatus;
+        type: string;
         schedule: string | null;
         lastRunAt: Date | null;
         downloadUrl: string | null;
         createdBy: number | null;
-        createdAt: Date;
     }>;
     findAll(): Promise<{
+        createdAt: Date;
         id: number;
-        type: string;
         status: import("@prisma/client").$Enums.ReportStatus;
+        type: string;
         schedule: string | null;
         lastRunAt: Date | null;
         downloadUrl: string | null;
         createdBy: number | null;
-        createdAt: Date;
     }[]>;
     findOne(id: string): Promise<{
+        createdAt: Date;
         id: number;
-        type: string;
         status: import("@prisma/client").$Enums.ReportStatus;
+        type: string;
         schedule: string | null;
         lastRunAt: Date | null;
         downloadUrl: string | null;
         createdBy: number | null;
-        createdAt: Date;
     }>;
     downloadReport(id: string): Promise<{
         filename: string;

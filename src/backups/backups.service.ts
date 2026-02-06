@@ -39,11 +39,10 @@ export class BackupsService {
     const backup = await this.prisma.backupJob.findUnique({
       where: { id: parseInt(id, 10) },
     });
-    
     if (!backup) {
       throw new NotFoundException(`Backup ${id} not found`);
     }
-    
+
     return backup;
   }
 
@@ -125,7 +124,7 @@ COMMIT;`;
     const lastBackup = await this.prisma.backupJob.findFirst({
       orderBy: { startedAt: 'desc' },
     });
-    
+
     const nextBackupAt = lastBackup
       ? new Date(lastBackup.startedAt.getTime() + 24 * 60 * 60 * 1000)
       : null;
