@@ -4,15 +4,6 @@ import { GenerateReportDto } from './dto/generate-report.dto';
 import type { Report } from '@prisma/client';
 import { ReportStatus } from '@prisma/client';
 
-export interface SalesReportData {
-  totalSales: number;
-  totalOrders: number;
-  period: {
-    startDate: Date;
-    endDate: Date;
-  };
-}
-
 @Injectable()
 export class ReportsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -24,7 +15,7 @@ export class ReportsService {
     const { startDate, endDate } = dto;
 
     // Get sales data
-    const orders = await this.prisma.saleOrder.findMany({
+    await this.prisma.saleOrder.findMany({
       where: {
         createdAt: {
           gte: new Date(startDate),
@@ -34,11 +25,6 @@ export class ReportsService {
       },
       include: { items: true },
     });
-
-    const totalSales = orders.reduce(
-      (sum, order) => sum + Number(order.total),
-      0,
-    );
 
     // Store in database
     const report = await this.prisma.report.create({
@@ -57,11 +43,7 @@ export class ReportsService {
    * Generate inventory report
    */
   async generateInventoryReport(): Promise<Report> {
-    const products = await this.prisma.product.findMany();
-
-    const lowStockProducts = products.filter(
-      (p) => p.stock <= (p.minStockThreshold || 10),
-    );
+    await this.prisma.product.findMany();
 
     const report = await this.prisma.report.create({
       data: {
@@ -78,12 +60,10 @@ export class ReportsService {
   /**
    * Generate product performance report
    */
-  async generatePerformanceReport(
-    dto: GenerateReportDto,
-  ): Promise<Report> {
+  async generatePerformanceReport(dto: GenerateReportDto): Promise<Report> {
     const { startDate, endDate } = dto;
 
-    const orders = await this.prisma.saleOrder.findMany({
+    await this.prisma.saleOrder.findMany({
       where: {
         createdAt: {
           gte: new Date(startDate),
@@ -92,8 +72,6 @@ export class ReportsService {
       },
       include: { items: true },
     });
-
-    const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total), 0);
 
     const report = await this.prisma.report.create({
       data: {
@@ -123,11 +101,11 @@ export class ReportsService {
     const report = await this.prisma.report.findUnique({
       where: { id: parseInt(id, 10) },
     });
-    
+
     if (!report) {
       throw new NotFoundException('Report not found');
     }
-    
+
     return report;
   }
 
